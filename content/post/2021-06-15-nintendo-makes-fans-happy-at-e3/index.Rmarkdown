@@ -17,12 +17,10 @@ subtitle: ''
 summary: 'Online fans appear happy with Nintendo for a change. We dig deeper into tweets after the Nintendo E3 event '
 authors: []
 lastmod: '2021-06-15T16:45:58-04:00'
-featured: no
+featured: yes
 image:
-  caption: 'Image credit: [**Unsplash**](https://unsplash.com/photos/X0xMB7cqKBI/download?force=true&w=1920)'
+  caption: '[Photo by Afif Kusuma on Unsplash](https://unsplash.com/photos/nKVZ1GdAsag)'
   focal_point: ""
-  placement: 2
-  preview_only: false
 projects: []
 ---
 
@@ -74,7 +72,7 @@ sentiment_bing = function(twt){
 
 While the Nintendo Switch remains the best selling video game console on the market, passionate gamers have made no secret of their disappointment due to a lack of exciting announcements over the past couple of years. While personally this sentiment seems very misplaced, it is at least partially understandable in light of the new consoles and exciting new video games other companies have released in the recent past.
 
-## Twitterverse rejoices!
+# Twitterverse rejoices!?!
 
 If brief perusal of Twitter is anything to go by, it seems that Nintendo's announcements today at the E3 2021 gaming convention have succeeded in reinvigorating its online fanbase.
 
