@@ -1,0 +1,140 @@
+---
+title: Nintendo makes fans happy at E3
+author: Najmus Saqib
+date: '2021-06-15'
+slug: nintendo-makes-fans-happy-at-e3
+categories:
+  - rstats
+  - tidytext
+  - sentiment analysis
+tags:
+  - rstats
+  - tidytext
+  - sentiment analysis
+  - nintendo
+  - video games
+subtitle: ''
+summary: 'Online fans appear happy with Nintendo for a change. We dig deeper into tweets after the Nintendo E3 event '
+authors: []
+lastmod: '2021-06-15T16:45:58-04:00'
+featured: no
+image:
+  caption: 'Image credit: [**Unsplash**](https://unsplash.com/photos/X0xMB7cqKBI/download?force=true&w=1920)'
+  focal_point: ""
+  placement: 2
+  preview_only: false
+projects: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+library(rtweet)
+library(tidyverse)
+library(tidytext)
+
+#tdf <- search_tweets("#NintendoDirect",
+#                     geocode = lookup_coords("usa"),
+#                     n = 10000, 
+#                     include_rts = FALSE) 
+#
+#df <- tdf %>%
+#  select(user_id, text)
+#
+#write_csv(df, "nin_twitter.csv")
+
+nin_twitter <- read_csv("nin_twitter.csv") 
+
+# Sentiment by tweet function
+sentiment_bing = function(twt){
+  ## cleaning
+  twt_tbl = tibble(text = twt) %>%
+    mutate(
+      # remove http elements
+      stripped_text = gsub("http\\s+","",text)
+      ) %>%
+    unnest_tokens(word, stripped_text) %>%
+    anti_join(stop_words) %>% # remove stop words
+    inner_join(get_sentiments("bing")) %>%
+    count(word, sentiment, sort = TRUE) %>%
+    ungroup() %>%
+    ## Create column score
+    mutate(
+      score = case_when(
+        sentiment == "negative"~ n*(-1),
+        sentiment == "positive"~ n*1)
+      )
+  ## calculate total score
+  sent.score = case_when(
+    nrow(twt_tbl)==0~0, # if no words, score is 0
+    nrow(twt_tbl)>0~sum(twt_tbl$score) # otherwise, sumb pos and neg
+  )
+}
+
+```
+
+While the Nintendo Switch remains the best selling video game console on the market, passionate gamers have made no secret of their disappointment due to a lack of exciting announcements over the past couple of years. While personally this sentiment seems very misplaced, it is at least partially understandable in light of the new consoles and exciting new video games other companies have released in the recent past.
+
+## Twitterverse rejoices!
+
+If brief perusal of Twitter is anything to go by, it seems that Nintendo's announcements today at the E3 2021 gaming convention have succeeded in reinvigorating its online fanbase.
+
+```{r, message=FALSE}
+
+# Tweet score
+tweet_score <- lapply(nin_twitter$text, function(x){sentiment_bing(x)})
+
+tweet_sentiment <- tweet_score %>%
+  unlist() %>%
+  tibble()
+
+# split tweets into individual words
+sentiment <- nin_twitter %>% 
+  unnest_tokens(output = 'word', input = 'text')
+
+# bing sentiment analysis
+bing_sentiment <- sentiment %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+## Plots
+ggplot(tweet_sentiment,aes(x=.)) +
+  geom_histogram() +
+    labs(title = "Distribution of sentiment in tweets containing #NintendoDirect",
+       y = "Count of tweets",
+       x = NULL) +
+  theme_minimal()
+```
+
+# Breakdown by specific words
+
+The above graph seems to indicate that the sample of tweets collected right after Nintendo's presentation concluded skew towards a negative sentiment, which goes counter to my expectations. Let's dig deeper.
+
+```{r}
+# split tweets into individual words
+sentiment <- nin_twitter %>% 
+  unnest_tokens(output = 'word', input = 'text')
+
+# bing sentiment analysis
+bing_sentiment <- sentiment %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n))
+  
+
+## Plots
+ggplot(bing_sentiment,aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(title = "Tweets containing #NintendoDirect",
+       y = "Contribution to sentiment",
+       x = NULL) +
+  coord_flip() +
+  theme_minimal()
+```
+The breakdown sheds some much needed light. Most of the negative sentiment appears to be coming from words like "wild" and "dread," which is misleading as the most prominent games announced by Nintendo today contain those words in their titles. Additionally, the Bing lexicon (further discussion on this topic in a future post) defines words like "hype" as negative, which is definitely not how the word is used on Twitter the vast majority of times.
+
+Taking these facts into account, it seems that overall sentiment is positive. Obviously this analysis is very surface level, but hopefully it has been helpful in illustrating some of the strengths and weaknesses associated with conducting sentiment analysis on Tweets. A future post will dig deeper on how a more robust analysis can be undertaken using the `tidytext` R package. 
