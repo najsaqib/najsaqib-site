@@ -1,6 +1,5 @@
 ---
 bio: I am a data scientist with the Canadian federal public service
-  matter.
 education:
   courses:
   - course: MA in Economics
